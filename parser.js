@@ -16,8 +16,8 @@ var Parser = function(data) {
             //debugArr(" cur[",i,"] - ", cur[i]);
             additional = _.extend(additional, {"__index": i.toString()});
             if (typeof cur[i] === 'object') {
-                var t = recurse(cur[i], prev, additional);
-                //debugArr("PARSE result from recurse  t = ", t);
+                var t = parseObj(cur[i], prev, additional);
+                //debugArr("PARSE result from parseObj  t = ", t);
                 temp.push(t);
             } else {
                 temp.push(cur[i]);
@@ -26,15 +26,16 @@ var Parser = function(data) {
         debugArr(" return - ", temp);
         return temp;
     }
-    function recurse (cur, prev, additional) {
+    function parseObj(cur, prev, additional) {
         debugObj("REC: cur = ", cur, " prev = ", prev, "add =", additional);
         var result =  _.extend({}, additional);
+
         if (typeof cur === 'object') {
-            if (! _.isArray(cur)) { // normal object
+            if (! _.isArray(cur) && cur !== null && cur !== undefined) { // normal object
                 Object.keys(cur).forEach(function (key) {
                     var value = cur[key];
                     //debugObj(" key = ", key, " value = ", value);
-                    if (typeof value === 'object') {
+                    if (typeof value === 'object' && value !== null && value !== undefined) {
                         var n = prev ? prev + "_" +key: key;
                         if (cur["id"]) {
                             additional = _.extend(additional, {"id": cur["id"]});
@@ -49,11 +50,11 @@ var Parser = function(data) {
                             debugObj(" output after parseArray = ", output);
                         } else { // value is normal object
                             if (output[n]) {
-                                output[n] = _.union(output[n], [recurse(value, n, additional)]);
+                                output[n] = _.union(output[n], [parseObj(value, n, additional)]);
                             } else {
-                                output[n] = [recurse(value, n, additional)];
+                                output[n] = [parseObj(value, n, additional)];
                             }
-                            debugObj(" output after recurse = ", output);
+                            debugObj(" output after parseObj = ", output);
                         }
 
                     } else { // native value key: value
@@ -71,7 +72,7 @@ var Parser = function(data) {
         debugObj(" return - ", result);
         return result;
     }
-    recurse(data, "", {});
+    parseObj(data, "", {});
     return output;
 };
 

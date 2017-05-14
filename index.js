@@ -13,19 +13,26 @@ function readInput(filename) {
 }
 
 function writeOutput(res, file) {
-    debug("input - ", res);
+    debug("result - ", res);
     fs.writeFile(file, JSON.stringify(res, null, 2), 'utf8', function(err) {
         if (err) {
             return console.error("Could not write output: ", err);
         }
-        console.log("The file was saved!");
+        console.log("Output is saved in " + file);
     });
 }
 
 function runner() {
     var data = readInput("./inputs/input1.json");
     var result = Parser(JSON.parse(data));
-    writeOutput(result, "./output/output1.json");
+    debug("input = ", data);
+    var outputDir = "./output";
+    if (!fs.existsSync(outputDir)){
+        fs.mkdirSync(outputDir);
+    }
+    Object.keys(result).forEach(function (key) {
+        writeOutput(result[key], "./output/" + key + ".json");
+    });
 }
 
 runner();
